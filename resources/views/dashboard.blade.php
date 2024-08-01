@@ -59,7 +59,7 @@
             $('#selected-date').text(new Date(date).toLocaleDateString());
 
             $.ajax({
-                url: '/api/get-reservations', // Crea questa rotta per restituire i dati necessari
+                url: '{{ url("/api/get-reservations") }}', // Crea questa rotta per restituire i dati necessari
                 method: 'GET',
                 data: {
                     date: date

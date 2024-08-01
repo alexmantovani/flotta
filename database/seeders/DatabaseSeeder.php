@@ -24,6 +24,12 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('12345678'),
         ]);
 
+        User::factory()->create([
+            'name' => 'Elena Carrà',
+            'email' => 'e@e.e',
+            'password' => Hash::make('password'),
+        ]);
+
         Vehicle::factory()->count(10)->create();
         Driver::factory()->count(100)->create();
 
