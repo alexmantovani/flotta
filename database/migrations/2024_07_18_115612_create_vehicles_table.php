@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('brand');
 
             $table->string('progressive')->nullable();
-            $table->enum('status', ['available', 'dismissed'])->default('available');
+            $table->enum('status', ['available', 'dismissed', 'maintenance', 'out of service'])->default('available');
             $table->string('logo')->nullable();
 
             $table->timestamps();

@@ -15,11 +15,19 @@
                     <x-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+
+                    <x-nav-link href="{{ route('vehicle.index') }}" :active="request()->routeIs('vehicle*')">
+                        {{ __('Veicoli') }}
+                    </x-nav-link>
+
+                    <x-nav-link href="{{ route('reservation.validate') }}" :active="request()->routeIs('reservation*')">
+                        {{ __('Autorizza') }}
+                    </x-nav-link>
                 </div>
             </div>
 
             <div class="hidden sm:flex sm:items-center sm:ms-6">
-                <a href="{{ route('reservations.create') }}" title="Assegna veicolo">
+                <a href="{{ route('reservation.create') }}" title="Assegna veicolo">
                     <button
                         class="flex text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-gray-300 transition">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6">

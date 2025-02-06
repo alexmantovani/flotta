@@ -25,12 +25,23 @@ class ReservationController extends Controller
      */
     public function create()
     {
+        $status = Request()->status ?? 'pending';
+        $vehicleId = Request()->vehicle_id ?? null;
 
-        $vehicles = Vehicle::all();
-        $drivers = Driver::all()->sortBy('name');
+        if ($vehicleId) {
+            $vehicles = Vehicle::where('id', $vehicleId)->get();
+        } else {
+            $vehicles = Vehicle::all();
+        }
+
+        if ($status == 'maintenance') {
+            $drivers = Collect();
+        } else {
+            $drivers = Driver::all()->sortBy('name');
+        }
         // $dates = implode(', ', Request()->selected_dates);
 
-        return view('reservations.create', compact('vehicles', 'drivers'));
+        return view('reservation.create', compact('vehicles', 'drivers', 'status'));
     }
 
     /**
@@ -40,8 +51,10 @@ class ReservationController extends Controller
     {
         $request->validate([
             'vehicle_id' => 'nullable',
-            'driver_id' => 'required',
+            'driver_id' => 'nullable',
             'dates' => 'required',
+            'status' => 'required',
+            'note' => 'nullable',
         ]);
         $dates = explode(',', $request->dates);
 
@@ -63,7 +76,7 @@ class ReservationController extends Controller
                 'driver_id' => $request->driver_id,
                 'date' => $date,
                 'note' => $request->note,
-                'status' => 'confirmed',
+                'status' => $request->status,
             ]);
         }
 
@@ -102,12 +115,25 @@ class ReservationController extends Controller
         //
     }
 
+
+    public function validate()
+    {
+        $pendingReservations = Reservation::where('status', 'pending')
+            ->where('date', '>=', Carbon::today())
+            ->orderBy('date', 'asc')
+            ->get();
+
+        $vehicles = Vehicle::all();
+
+        return view('reservation.validate', compact('pendingReservations', 'vehicles'));
+    }
+
     public function request()
     {
         // $vehicles = Vehicle::all();
         // $drivers = Driver::all()->sortBy('name');
 
-        return view('reservations.request');
+        return view('reservation.request');
     }
 
     public function storeRequest(StoreReservationRequest $request)
@@ -142,7 +168,7 @@ class ReservationController extends Controller
             ]);
         }
 
-        return redirect()->route('reservations.create')->with('success', 'Reservation created successfully.');
+        return redirect()->route('reservation.create')->with('success', 'Reservation created successfully.');
     }
 
     public function getReservations()
@@ -151,7 +177,10 @@ class ReservationController extends Controller
         $date = Carbon::parse($request->input('date'));
 
         // Ottieni le prenotazioni per la data specificata
-        $reservations = Reservation::whereDate('date', $date)->with('driver', 'vehicle')->get();
+        $reservations = Reservation::whereDate('date', $date)
+            ->where('status', '!=', 'maintenance')
+            ->with('driver', 'vehicle')
+            ->get();
 
         $data = $reservations->map(function ($reservation) {
             return [

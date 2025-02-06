@@ -19,6 +19,7 @@ return new class extends Migration
             $table->date('date');
             $table->text('note')->nullable();
             $table->string('destination')->nullable();
+            $table->unsignedInteger('chilometers')->nullable();
             $table->enum('status', ['pending', 'confirmed', 'cancelled', 'rejected', 'maintenance'])->default('pending');
 
             $table->timestamps();

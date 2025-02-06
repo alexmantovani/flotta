@@ -13,7 +13,7 @@
                             {{ session('success') }}
                         </div>
                     @endif
-                    <form action="{{ route('reservations.store') }}" method="POST"
+                    <form action="{{ route('reservation.store') }}" method="POST"
                         class="space-y-4 flex-grow flex flex-col">
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
@@ -26,31 +26,41 @@
                                     <label for="vehicle_id"
                                         class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Veicolo') }}</label>
                                     <select name="vehicle_id" id="vehicle_id" class="form-select mt-1 block w-full">
-                                        <option value="0">{{ __('La prima macchina disponibile per il periodo selezionato') }}</option>
-                                        @foreach ($vehicles as $vehicle)
-                                            <option value="{{ $vehicle->id }}">{{ $vehicle->plate }} -
-                                                {{ $vehicle->model }} -
-                                                {{ $vehicle->brand }}</option>
-                                        @endforeach
+                                        @if ($vehicles->count() > 1)
+                                            <option value="0">
+                                                {{ __('La prima macchina disponibile per il periodo selezionato') }}
+                                            </option>
+                                            @foreach ($vehicles as $vehicle)
+                                                <option value="{{ $vehicle->id }}">{{ $vehicle->plate }} -
+                                                    {{ $vehicle->model }} -
+                                                    {{ $vehicle->brand }}</option>
+                                            @endforeach
+                                        @else
+                                            <option value="{{ $vehicles[0]->id }}">{{ $vehicles[0]->model }} -
+                                                {{ $vehicles[0]->brand }}</option>
+                                        @endif
                                     </select>
                                 </div>
+                                @if ($drivers->count())
+                                    <div class="mb-4">
+                                        <label for="driver_id"
+                                            class="block text-sm font-medium text-gray-700 dark:text-gray-300" required
+                                            autofocus>{{ __('Dipendente') }}</label>
+                                        <select name="driver_id" id="driver_id" class="form-select mt-1 block w-full">
+                                            <option value="">{{ __('Seleziona...') }}</option>
+                                            @foreach ($drivers as $driver)
+                                                <option value="{{ $driver->id }}">{{ $driver->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                @endif
                                 <div class="mb-4">
-                                    <label for="driver_id"
-                                        class="block text-sm font-medium text-gray-700 dark:text-gray-300" required
-                                        autofocus>{{ __('Dipendente') }}</label>
-                                    <select name="driver_id" id="driver_id" class="form-select mt-1 block w-full">
-                                        <option value="">{{ __('Seleziona...') }}</option>
-                                        @foreach ($drivers as $driver)
-                                            <option value="{{ $driver->id }}">{{ $driver->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="mb-4">
-                                    <label for="notes"
+                                    <label for="note"
                                         class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Note') }}</label>
-                                    <textarea name="notes" id="notes" class="form-textarea mt-1 block w-full" rows="5">{{ old('notes') }}</textarea>
+                                    <textarea name="note" id="note" class="form-textarea mt-1 block w-full" rows="5">{{ old('note') }}</textarea>
                                 </div>
                                 <input type="hidden" name="dates" id="dates" value="{{ old('dates') }}">
+                                <input type="hidden" name="status" id="status" value="{{ $status }}">
 
                             </div>
                         </div>

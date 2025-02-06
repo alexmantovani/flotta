@@ -35,7 +35,7 @@ class VehicleController extends Controller
             $dates->push(Carbon::today()->addDays($i));
         }
 
-        return view('vehicles.index', compact('vehicles', 'dates'));
+        return view('vehicle.index', compact('vehicles', 'dates'));
     }
 
     /**
@@ -43,7 +43,7 @@ class VehicleController extends Controller
      */
     public function create()
     {
-        return view('vehicles.create');
+        return view('vehicle.create');
     }
 
     /**
@@ -67,7 +67,22 @@ class VehicleController extends Controller
      */
     public function show(Vehicle $vehicle)
     {
-        return view('vehicles.show', compact('vehicle'));
+        $groupedReservations = $vehicle->reservations()
+            ->where('date', '>=', Carbon::today())
+            ->where('status', '!=', 'maintenance')
+            ->orderBy('date')
+            ->get()
+            ->groupBy(function ($reservation) {
+                return Carbon::parse($reservation->created_at)->format('Y-m'); // Raggruppa per anno e mese (es. "2025-01")
+            });
+
+        $maintenanceReservations = $vehicle->reservations()
+            ->where('status', 'maintenance')
+            ->where('date', '>=', Carbon::today())
+            ->orderBy('date')
+            ->get();
+
+        return view('vehicle.show', compact('vehicle', 'groupedReservations', 'maintenanceReservations'));
     }
 
     /**
@@ -75,7 +90,7 @@ class VehicleController extends Controller
      */
     public function edit(Vehicle $vehicle)
     {
-        return view('vehicles.edit', compact('vehicle'));
+        return view('vehicle.edit', compact('vehicle'));
     }
 
     /**
@@ -91,7 +106,7 @@ class VehicleController extends Controller
 
         $vehicle->update($request->all());
 
-        return redirect()->route('vehicles.index')->with('success', 'Vehicle updated successfully.');
+        return redirect()->route('vehicle.index')->with('success', 'Vehicle updated successfully.');
     }
 
     /**
@@ -101,7 +116,6 @@ class VehicleController extends Controller
     {
         $vehicle->delete();
 
-        return redirect()->route('vehicles.index')->with('success', 'Vehicle deleted successfully.');
+        return redirect()->route('vehicle.index')->with('success', 'Vehicle deleted successfully.');
     }
-
 }

@@ -14,7 +14,7 @@
                     </h3>
 
                     <!-- Search Form -->
-                    <form method="GET" action="{{ route('vehicles.index') }}" class="mb-6">
+                    <form method="GET" action="{{ route('vehicle.index') }}" class="mb-6">
                         <div class="flex items-center">
                             <input type="text" name="search" placeholder="Search by plate or driver"
                                 value="{{ request('search') }}" class="form-input w-full">
