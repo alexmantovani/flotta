@@ -1,0 +1,26 @@
+<svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1E40AF;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Corpo del veicolo -->
+  <rect x="8" y="20" width="28" height="10" rx="2" fill="url(#gradient)"/>
+
+  <!-- Cabina -->
+  <path d="M 12,20 L 16,10 L 28,10 L 30,20 Z" fill="#60A5FA"/>
+
+  <!-- Finestre -->
+  <rect x="14" y="12" width="8" height="6" rx="1" fill="white" opacity="0.9"/>
+  <rect x="24" y="12" width="5" height="6" rx="1" fill="white" opacity="0.9"/>
+
+  <!-- Ruote -->
+  <circle cx="15" cy="33" r="4" fill="#1E293B" stroke="#3B82F6" stroke-width="1"/>
+  <circle cx="30" cy="33" r="4" fill="#1E293B" stroke="#3B82F6" stroke-width="1"/>
+
+  <!-- Badge F -->
+  <circle cx="40" cy="10" r="8" fill="#EF4444"/>
+  <text x="40" y="14" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white" text-anchor="middle">F</text>
+</svg>

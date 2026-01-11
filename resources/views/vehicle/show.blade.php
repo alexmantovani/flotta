@@ -145,10 +145,10 @@
                     <div class="p-5">
                         <div class="flex justify-between items-center">
                             <div class="text-xl font-semibold text-gray-700 dark:text-gray-300 py-3">
-                                Manutenzione
+                                Manutenzioni
                             </div>
                             <div>
-                                <a href="{{ route('reservation.create', ['status' => 'maintenance', 'vehicle_id' => $vehicle->id]) }}"
+                                <a href="{{ route('maintenance.create', ['vehicle_id' => $vehicle->id]) }}"
                                     title="Programma manutenzione">
                                     <button
                                         class="flex text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-gray-300 transition">
@@ -165,19 +165,100 @@
                     </div>
 
                     <!-- Contenuto Scrollabile -->
-                    <div class="flex-grow overflow-y-auto p-5 text-gray-400 ">
-                        @if ($maintenanceReservations->isNotEmpty())
-                            @foreach ($maintenanceReservations as $reservation)
-                                <div class="text-center text-lg pt-2 text-orange-500 capitalize">
-                                    {{ $reservation->date->translatedFormat('l j F Y') }}
-                                </div>
-                                <div class="text-center pb-2">
-                                    {{ $reservation->note ?? 'nessuna nota' }}
-                                </div>
-                            @endforeach
-                        @else
-                            <div class="flex items-center justify-center h-full text-gray-500 text-center">
-                                Non ci sono periodi di manutenzione programmati per questo veicolo.
+                    <div class="flex-grow overflow-y-auto p-5">
+                        <!-- Manutenzioni in corso -->
+                        @if($inProgressMaintenances->isNotEmpty())
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-orange-600 dark:text-orange-400 mb-3">
+                                    In Corso
+                                </h3>
+                                @foreach($inProgressMaintenances as $maintenance)
+                                    <div class="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4 mb-3">
+                                        <div class="font-semibold text-gray-900 dark:text-gray-100">
+                                            {{ $maintenance->reason }}
+                                        </div>
+                                        <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                            {{ $maintenance->start_date->format('d/m/Y') }} - {{ $maintenance->end_date->format('d/m/Y') }}
+                                        </div>
+                                        @if($maintenance->description)
+                                            <div class="text-sm text-gray-700 dark:text-gray-300 mt-2">
+                                                {{ $maintenance->description }}
+                                            </div>
+                                        @endif
+                                        <div class="mt-2">
+                                            <a href="{{ route('maintenance.show', $maintenance) }}"
+                                               class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400">
+                                                Dettagli →
+                                            </a>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        <!-- Manutenzioni future -->
+                        @if($upcomingMaintenances->isNotEmpty())
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-blue-600 dark:text-blue-400 mb-3">
+                                    Programmate
+                                </h3>
+                                @foreach($upcomingMaintenances as $maintenance)
+                                    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 mb-3">
+                                        <div class="font-semibold text-gray-900 dark:text-gray-100">
+                                            {{ $maintenance->reason }}
+                                        </div>
+                                        <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                            {{ $maintenance->start_date->format('d/m/Y') }} - {{ $maintenance->end_date->format('d/m/Y') }}
+                                            <span class="text-xs ml-2">
+                                                ({{ $maintenance->start_date->diffForHumans() }})
+                                            </span>
+                                        </div>
+                                        @if($maintenance->provider)
+                                            <div class="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                                                Officina: {{ $maintenance->provider }}
+                                            </div>
+                                        @endif
+                                        <div class="mt-2">
+                                            <a href="{{ route('maintenance.edit', $maintenance) }}"
+                                               class="text-sm text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 mr-3">
+                                                Modifica
+                                            </a>
+                                            <a href="{{ route('maintenance.show', $maintenance) }}"
+                                               class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400">
+                                                Dettagli →
+                                            </a>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        <!-- Storico (ultime manutenzioni) -->
+                        @if($pastMaintenances->isNotEmpty())
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-600 dark:text-gray-400 mb-3">
+                                    Storico Recente
+                                </h3>
+                                @foreach($pastMaintenances as $maintenance)
+                                    <div class="bg-gray-50 dark:bg-gray-900/20 rounded-lg p-3 mb-2">
+                                        <div class="font-medium text-gray-900 dark:text-gray-100 text-sm">
+                                            {{ $maintenance->reason }}
+                                        </div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                            {{ $maintenance->end_date->format('d/m/Y') }}
+                                            @if($maintenance->cost)
+                                                • € {{ number_format($maintenance->cost, 2) }}
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        <!-- Nessuna manutenzione -->
+                        @if($upcomingMaintenances->isEmpty() && $inProgressMaintenances->isEmpty() && $pastMaintenances->isEmpty())
+                            <div class="flex items-center justify-center h-full text-gray-500 dark:text-gray-400 text-center">
+                                Non ci sono manutenzioni registrate per questo veicolo.
                             </div>
                         @endif
                     </div>

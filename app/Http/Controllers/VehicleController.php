@@ -67,22 +67,40 @@ class VehicleController extends Controller
      */
     public function show(Vehicle $vehicle)
     {
+        // Prenotazioni future (escluse manutenzioni)
         $groupedReservations = $vehicle->reservations()
             ->where('date', '>=', Carbon::today())
             ->where('status', '!=', 'maintenance')
             ->orderBy('date')
             ->get()
             ->groupBy(function ($reservation) {
-                return Carbon::parse($reservation->created_at)->format('Y-m'); // Raggruppa per anno e mese (es. "2025-01")
+                return Carbon::parse($reservation->created_at)->format('Y-m');
             });
 
-        $maintenanceReservations = $vehicle->reservations()
-            ->where('status', 'maintenance')
-            ->where('date', '>=', Carbon::today())
-            ->orderBy('date')
+        // Manutenzioni future
+        $upcomingMaintenances = $vehicle->maintenances()
+            ->upcoming()
+            ->orderBy('start_date')
             ->get();
 
-        return view('vehicle.show', compact('vehicle', 'groupedReservations', 'maintenanceReservations'));
+        // Manutenzioni in corso
+        $inProgressMaintenances = $vehicle->maintenances()
+            ->inProgress()
+            ->get();
+
+        // Storico manutenzioni (ultime 10)
+        $pastMaintenances = $vehicle->maintenances()
+            ->completed()
+            ->limit(10)
+            ->get();
+
+        return view('vehicle.show', compact(
+            'vehicle',
+            'groupedReservations',
+            'upcomingMaintenances',
+            'inProgressMaintenances',
+            'pastMaintenances'
+        ));
     }
 
     /**

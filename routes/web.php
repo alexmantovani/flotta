@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DriverController;
+use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\RequestController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\VehicleController;
@@ -28,4 +29,5 @@ Route::middleware([
     Route::resource('driver', DriverController::class);
     Route::resource('reservation', ReservationController::class);
     Route::resource('request', RequestController::class);
+    Route::resource('maintenance', MaintenanceController::class);
 });

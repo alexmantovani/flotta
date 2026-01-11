@@ -4,9 +4,10 @@
         <div class="flex justify-between h-16">
             <div class="flex">
                 <!-- Logo -->
-                <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
-                        <x-application-mark class="block h-9 w-auto" />
+                <div class="shrink-0 flex items-center gap-3">
+                    <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
+                        <x-application-mark class="block h-10 w-auto" />
+                        <span class="text-xl font-bold text-gray-800 dark:text-white">FLOTTA</span>
                     </a>
                 </div>
 

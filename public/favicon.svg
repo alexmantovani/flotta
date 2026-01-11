@@ -1,0 +1,24 @@
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1E40AF;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Sfondo -->
+  <rect width="32" height="32" rx="6" fill="url(#grad)"/>
+
+  <!-- Veicolo stilizzato -->
+  <g transform="translate(16, 16)">
+    <!-- Corpo -->
+    <rect x="-8" y="-2" width="12" height="4" rx="1" fill="white"/>
+    <!-- Cabina -->
+    <path d="M -6,-2 L -4,-6 L 2,-6 L 3,-2 Z" fill="white" opacity="0.9"/>
+    <!-- Ruote -->
+    <circle cx="-5" cy="3" r="1.5" fill="white"/>
+    <circle cx="2" cy="3" r="1.5" fill="white"/>
+    <!-- Faro -->
+    <circle cx="3.5" cy="-0.5" r="0.5" fill="#FCD34D"/>
+  </g>
+</svg>

@@ -1,0 +1,66 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Gradiente per profondità -->
+  <defs>
+    <linearGradient id="mainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1E40AF;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#60A5FA;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3B82F6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Cerchio di sfondo -->
+  <circle cx="100" cy="100" r="95" fill="url(#mainGradient)" opacity="0.1"/>
+
+  <!-- Veicolo principale (stilizzato) -->
+  <g transform="translate(100, 100)">
+    <!-- Corpo del veicolo -->
+    <rect x="-45" y="-15" width="70" height="25" rx="3" fill="url(#mainGradient)"/>
+
+    <!-- Cabina -->
+    <path d="M -35,-15 L -25,-35 L 10,-35 L 15,-15 Z" fill="url(#accentGradient)"/>
+
+    <!-- Finestre -->
+    <rect x="-32" y="-32" width="20" height="15" rx="2" fill="white" opacity="0.9"/>
+    <rect x="-8" y="-32" width="20" height="15" rx="2" fill="white" opacity="0.9"/>
+
+    <!-- Ruote -->
+    <circle cx="-30" cy="10" r="8" fill="#1E293B" stroke="url(#mainGradient)" stroke-width="2"/>
+    <circle cx="-30" cy="10" r="3" fill="#64748B"/>
+
+    <circle cx="15" cy="10" r="8" fill="#1E293B" stroke="url(#mainGradient)" stroke-width="2"/>
+    <circle cx="15" cy="10" r="3" fill="#64748B"/>
+
+    <!-- Dettagli -->
+    <circle cx="22" cy="-5" r="2" fill="#FCD34D"/>
+    <rect x="28" y="-2" width="3" height="2" rx="1" fill="#EF4444"/>
+  </g>
+
+  <!-- Elementi di movimento/traccia -->
+  <g opacity="0.4">
+    <path d="M 30,105 Q 25,105 20,105" stroke="url(#accentGradient)" stroke-width="2" stroke-linecap="round" fill="none"/>
+    <path d="M 30,100 Q 22,100 15,100" stroke="url(#accentGradient)" stroke-width="2" stroke-linecap="round" fill="none"/>
+    <path d="M 30,110 Q 22,110 15,110" stroke="url(#accentGradient)" stroke-width="2" stroke-linecap="round" fill="none"/>
+  </g>
+
+  <!-- Veicoli secondari più piccoli (fleet concept) -->
+  <g opacity="0.5" transform="translate(100, 145)">
+    <rect x="-50" y="0" width="20" height="8" rx="1" fill="url(#mainGradient)"/>
+    <circle cx="-45" cy="8" r="3" fill="#1E293B"/>
+    <circle cx="-35" cy="8" r="3" fill="#1E293B"/>
+
+    <rect x="-20" y="0" width="20" height="8" rx="1" fill="url(#mainGradient)"/>
+    <circle cx="-15" cy="8" r="3" fill="#1E293B"/>
+    <circle cx="-5" cy="8" r="3" fill="#1E293B"/>
+
+    <rect x="10" y="0" width="20" height="8" rx="1" fill="url(#mainGradient)"/>
+    <circle cx="15" cy="8" r="3" fill="#1E293B"/>
+    <circle cx="25" cy="8" r="3" fill="#1E293B"/>
+  </g>
+
+  <!-- Badge/indicatore numerico -->
+  <circle cx="160" cy="60" r="18" fill="#EF4444"/>
+  <text x="160" y="66" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle">F</text>
+</svg>

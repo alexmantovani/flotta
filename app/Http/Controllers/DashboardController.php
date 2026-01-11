@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Maintenance;
 use App\Models\Reservation;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -23,10 +24,13 @@ class DashboardController extends Controller
 
         // Ricavo i veicoli in manutenzione per i prossimi 2 mesi, con cache per migliorare le prestazioni
         $vehiclesInMaintenance = Cache::remember("vehicles_in_maintenance_{$year}_{$month}", 60, function () {
-            return Reservation::with('vehicle') // Include il modello Vehicle
-                ->where('status', 'maintenance')
-                ->whereBetween('date', [Carbon::now(), Carbon::now()->addMonths(2)])
-                ->orderBy('date') // Ordina i risultati per 'date'
+            return Maintenance::with('vehicle')
+                ->active()
+                ->where(function($query) {
+                    $query->where('start_date', '<=', Carbon::now()->addMonths(2))
+                          ->where('end_date', '>=', Carbon::now());
+                })
+                ->orderBy('start_date')
                 ->get()
                 ->groupBy('vehicle_id');
         });

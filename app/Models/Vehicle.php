@@ -17,6 +17,18 @@ class Vehicle extends Model
         return $this->hasMany(Reservation::class);
     }
 
+    public function maintenances()
+    {
+        return $this->hasMany(Maintenance::class);
+    }
+
+    public function activeMaintenances()
+    {
+        return $this->hasMany(Maintenance::class)
+            ->active()
+            ->orderBy('start_date');
+    }
+
     public function getReservationForDate($date)
     {
         // Assicurati che la data sia un'istanza di Carbon
@@ -29,7 +41,23 @@ class Vehicle extends Model
 
     public function isAvailableForDate($date)
     {
-        return $this->getReservationForDate($date) === null;
+        // Verifica se il veicolo ha una prenotazione in quella data
+        $hasReservation = $this->getReservationForDate($date) !== null;
+
+        if ($hasReservation) {
+            return false;
+        }
+
+        // Verifica se il veicolo è in manutenzione in quella data
+        $hasMaintenance = $this->maintenances()
+            ->active()
+            ->where(function($query) use ($date) {
+                $query->where('start_date', '<=', $date)
+                      ->where('end_date', '>=', $date);
+            })
+            ->exists();
+
+        return !$hasMaintenance;
     }
 
     // public static function getAvailableVehicle($startDate, $endDate)
@@ -103,8 +131,24 @@ class Vehicle extends Model
                 });
             });
 
-            // Restituisci solo i veicoli che non hanno prenotazioni sovrapposte
-            return !$hasOverlappingReservations;
+            if ($hasOverlappingReservations) {
+                return false;
+            }
+
+            // Verifica manutenzioni sovrapposte
+            foreach ($dates as $date) {
+                $hasMaintenance = $vehicle->maintenances()
+                    ->active()
+                    ->where('start_date', '<=', $date)
+                    ->where('end_date', '>=', $date)
+                    ->exists();
+
+                if ($hasMaintenance) {
+                    return false;
+                }
+            }
+
+            return true;
         });
 
         // Se non ci sono veicoli disponibili, restituisci null
@@ -145,13 +189,22 @@ class Vehicle extends Model
         return $this->status; // Restituisce lo stato del veicolo se non è disponibile
     }
 
-    $reservations = $this->reservations()
-        ->whereDate('date', $date)
-        ->get(['status']);
+    // Verifica se c'è una manutenzione attiva per questa data
+    $hasMaintenance = $this->maintenances()
+        ->active()
+        ->where('start_date', '<=', $date)
+        ->where('end_date', '>=', $date)
+        ->exists();
 
-    if ($reservations->contains('status', 'maintenance')) {
+    if ($hasMaintenance) {
         return "maintenance";
     }
+
+    // Verifica le prenotazioni (escludendo quelle con status maintenance)
+    $reservations = $this->reservations()
+        ->whereDate('date', $date)
+        ->where('status', '!=', 'maintenance')
+        ->get(['status']);
 
     if ($reservations->isNotEmpty()) {
         return "reserved";
