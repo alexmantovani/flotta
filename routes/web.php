@@ -25,6 +25,7 @@ Route::middleware([
 Route::middleware([
     'auth:sanctum',
 ])->group(function () {
+    Route::post('vehicle/import', [VehicleController::class, 'import'])->name('vehicle.import');
     Route::resource('vehicle', VehicleController::class);
     Route::resource('driver', DriverController::class);
     Route::resource('reservation', ReservationController::class);

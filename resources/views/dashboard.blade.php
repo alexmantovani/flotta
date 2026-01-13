@@ -63,37 +63,6 @@
 
         </div>
 
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 my-4">
-            <div class=" text-xl font-semibold text-gray-700 dark:text-gray-300 pt-5">
-                Manutenzione programmata <span class="text-gray-400 font-thin">(per i prossimi 2 mesi)</span>
-            </div>
-
-            <div class="py-3 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-                @foreach ($vehiclesInMaintenance as $vehicleMaint)
-                    @php
-                        $maintenance = $vehicleMaint->first();
-                    @endphp
-                    <a href="{{ route('maintenance.show', $maintenance->id) }}">
-                        <div class="rounded-lg bg-red-500 p-3">
-                            <div class="text-xl text-gray-50 dark:text-gray-300 font-semibold">
-                                {{ $maintenance->vehicle->plate }}
-                            </div>
-                            <div class="text-sm text-gray-50 uppercase">
-                                {{ $maintenance->reason }}
-                            </div>
-                            <div class="text-sm text-red-200" title="{{ $maintenance->start_date->format('d/m/Y') }}">
-                                {{ $maintenance->start_date->diffForHumans(['syntax' => \Carbon\CarbonInterface::DIFF_RELATIVE_TO_NOW]) }}
-                            </div>
-                            @if($maintenance->provider)
-                                <div class="text-xs text-red-100 mt-1">
-                                    {{ $maintenance->provider }}
-                                </div>
-                            @endif
-                        </div>
-                    </a>
-                @endforeach
-            </div>
-        </div>
     </div>
 
     <style>
