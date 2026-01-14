@@ -34,14 +34,10 @@ class ReservationController extends Controller
             $vehicles = Vehicle::all();
         }
 
-        if ($status == 'maintenance') {
-            $drivers = Collect();
-        } else {
-            $drivers = Driver::all()->sortBy('name');
-        }
-        // $dates = implode(', ', Request()->selected_dates);
+        // Non carichiamo più tutti i dipendenti, useremo AJAX per la ricerca
+        $showDriverSelect = ($status != 'maintenance');
 
-        return view('reservation.create', compact('vehicles', 'drivers', 'status'));
+        return view('reservation.create', compact('vehicles', 'showDriverSelect', 'status'));
     }
 
     /**
@@ -531,6 +527,29 @@ class ReservationController extends Controller
             'success' => true,
             'message' => 'Prenotazione eliminata con successo'
         ]);
+    }
+
+    /**
+     * Cerca dipendenti per autocompletamento
+     */
+    public function searchDrivers()
+    {
+        $request = Request();
+        $search = $request->input('search', '');
+
+        $drivers = Driver::search($search)
+            ->orderBy('first_name')
+            ->orderBy('last_name')
+            ->limit(20)
+            ->get()
+            ->map(function ($driver) {
+                return [
+                    'id' => $driver->id,
+                    'text' => $driver->name
+                ];
+            });
+
+        return response()->json(['results' => $drivers]);
     }
 
     /**
