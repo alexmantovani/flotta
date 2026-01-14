@@ -21,6 +21,10 @@
                         {{ __('Veicoli') }}
                     </x-nav-link>
 
+                    <x-nav-link href="{{ route('driver.index') }}" :active="request()->routeIs('driver*')">
+                        {{ __('Conducenti') }}
+                    </x-nav-link>
+
                     <x-nav-link href="{{ route('reservation.validate') }}" :active="request()->routeIs('reservation*')">
                         {{ __('Autorizza') }}
                     </x-nav-link>
@@ -172,6 +176,15 @@
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link href="{{ route('vehicle.index') }}" :active="request()->routeIs('vehicle*')">
+                {{ __('Veicoli') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link href="{{ route('driver.index') }}" :active="request()->routeIs('driver*')">
+                {{ __('Conducenti') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link href="{{ route('reservation.validate') }}" :active="request()->routeIs('reservation*')">
+                {{ __('Autorizza') }}
             </x-responsive-nav-link>
         </div>
 

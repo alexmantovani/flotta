@@ -528,7 +528,7 @@
     <!-- Stats Section -->
     <section class="stats">
         <div class="container">
-            <h2 class="section-title" style="color: white;">I Nostri Numeri</h2>
+            <h2 class="section-title text-white">I Nostri Numeri</h2>
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-number">10,000+</div>
@@ -664,7 +664,7 @@
     <footer>
         <div class="container">
             <p>© {{ date('Y') }} Flotta. Tutti i diritti riservati.</p>
-            <p style="margin-top: 10px; opacity: 0.7;">Laravel v{{ Illuminate\Foundation\Application::VERSION }} (PHP
+            <p class="mt-2.5 opacity-70">Laravel v{{ Illuminate\Foundation\Application::VERSION }} (PHP
                 v{{ PHP_VERSION }})</p>
         </div>
     </footer>

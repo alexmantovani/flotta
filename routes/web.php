@@ -27,6 +27,7 @@ Route::middleware([
 ])->group(function () {
     Route::post('vehicle/import', [VehicleController::class, 'import'])->name('vehicle.import');
     Route::resource('vehicle', VehicleController::class);
+    Route::post('driver/import', [DriverController::class, 'import'])->name('driver.import');
     Route::resource('driver', DriverController::class);
     Route::resource('reservation', ReservationController::class);
     Route::resource('request', RequestController::class);
