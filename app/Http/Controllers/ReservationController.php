@@ -8,7 +8,6 @@ use App\Models\Driver;
 use App\Models\Reservation;
 use App\Models\Vehicle;
 use Carbon\Carbon;
-use Request;
 
 class ReservationController extends Controller
 {
@@ -34,8 +33,9 @@ class ReservationController extends Controller
             $vehicles = Vehicle::all();
         }
 
-        // Non carichiamo più tutti i dipendenti, useremo AJAX per la ricerca
-        $showDriverSelect = ($status != 'maintenance');
+        // Gli utenti normali non vedono il selettore conducente (usa se stesso automaticamente)
+        // Gli admin vedono il selettore solo se non è manutenzione
+        $showDriverSelect = auth()->user()->isAdmin() && ($status != 'maintenance');
 
         return view('reservation.create', compact('vehicles', 'showDriverSelect', 'status'));
     }
@@ -73,10 +73,10 @@ class ReservationController extends Controller
 
             $hasMaintenance = \App\Models\Maintenance::where('vehicle_id', $vehicleId)
                 ->active()
-                ->where(function($query) use ($startDate, $endDate) {
-                    $query->where(function($q) use ($startDate, $endDate) {
+                ->where(function ($query) use ($startDate, $endDate) {
+                    $query->where(function ($q) use ($startDate, $endDate) {
                         $q->where('start_date', '<=', $endDate)
-                          ->where('end_date', '>=', $startDate);
+                            ->where('end_date', '>=', $startDate);
                     });
                 })
                 ->exists();
@@ -90,16 +90,48 @@ class ReservationController extends Controller
         // Verifica conflitti con prenotazioni esistenti
         $vehicleId = $request->vehicle_id;
 
-        // Verifica che ogni data non abbia già una prenotazione
+        // Verifica che ogni data non abbia già una prenotazione (confirmed o pending)
         foreach ($dates as $date) {
             $dateFormatted = Carbon::parse($date)->format('Y-m-d');
             $existingReservation = Reservation::where('vehicle_id', $vehicleId)
                 ->whereDate('date', $dateFormatted)
+                ->whereIn('status', ['confirmed', 'pending'])
                 ->first();
 
             if ($existingReservation) {
                 return redirect()->route('dashboard')
-                    ->with('error', 'Il veicolo è già prenotato per il ' . Carbon::parse($date)->format('d/m/Y') . '. Scegliere un altro veicolo o periodo.');
+                    ->with('error', 'Il veicolo è già prenotato per il '.Carbon::parse($date)->format('d/m/Y').'. Scegliere un altro veicolo o periodo.');
+            }
+        }
+
+        // Determina lo status iniziale in base alla configurazione e al ruolo
+        $initialStatus = $request->status; // Mantieni status per manutenzione
+
+        if ($request->status !== 'maintenance') {
+            // Per prenotazioni normali, verifica AUTO_APPROVE_RESERVATIONS
+            $autoApprove = config('app.auto_approve_reservations', false);
+
+            // if ($autoApprove || auth()->user()->isAdmin()) {
+            if ($autoApprove) {
+                // Auto-approvazione attiva O utente è admin
+                $initialStatus = 'confirmed';
+            } else {
+                // Richiede approvazione manuale
+                $initialStatus = 'pending';
+            }
+        }
+
+        // Determina il driver_id in base al ruolo
+        if (auth()->user()->isAdmin()) {
+            // Admin: usa il driver_id dal form (può selezionarlo)
+            $driverId = $request->driver_id;
+        } else {
+            // User normale: usa il proprio driver_id associato
+            $driverId = auth()->user()->driver_id;
+
+            // Se l'utente non ha un driver_id associato, mostra errore
+            if (! $driverId) {
+                return redirect()->back()->with('error', 'Devi essere associato a un profilo conducente per creare prenotazioni. Contatta l\'amministratore.');
             }
         }
 
@@ -107,10 +139,11 @@ class ReservationController extends Controller
         foreach ($dates as $date) {
             Reservation::create([
                 'vehicle_id' => $request->vehicle_id,
-                'driver_id' => $request->driver_id,
+                'driver_id' => $driverId,
                 'date' => $date,
                 'note' => $request->note,
-                'status' => $request->status,
+                'status' => $initialStatus,
+                'user_id' => auth()->id(),
             ]);
         }
 
@@ -150,21 +183,18 @@ class ReservationController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Prenotazione eliminata con successo.'
+            'message' => 'Prenotazione eliminata con successo.',
         ]);
     }
 
-
     public function validate()
     {
-        $pendingReservations = Reservation::where('status', 'pending')
-            ->where('date', '>=', Carbon::today())
-            ->orderBy('date', 'asc')
-            ->get();
+        // Solo admin possono validare prenotazioni
+        if (! auth()->user()->isAdmin()) {
+            abort(403, 'Accesso negato.');
+        }
 
-        $vehicles = Vehicle::all();
-
-        return view('reservation.validate', compact('pendingReservations', 'vehicles'));
+        return view('reservation.validate');
     }
 
     public function request()
@@ -192,8 +222,9 @@ class ReservationController extends Controller
         // Se non è stata assegnata la macchina ne cerco io una disponibile
         if ($request->vehicle_id == null) {
             $vehicle = Vehicle::getAvailableVehicle($startDate, $endDate);
-            if ($vehicle)
+            if ($vehicle) {
                 $request->merge(['vehicle_id' => $vehicle->id]);
+            }
         }
 
         // Verifica conflitti con prenotazioni esistenti (solo se è stato assegnato un veicolo)
@@ -203,9 +234,9 @@ class ReservationController extends Controller
             // Verifica che il veicolo non sia in manutenzione
             $hasMaintenance = \App\Models\Maintenance::where('vehicle_id', $vehicleId)
                 ->active()
-                ->where(function($query) use ($startDate, $endDate) {
+                ->where(function ($query) use ($startDate, $endDate) {
                     $query->where('start_date', '<=', $endDate->format('Y-m-d'))
-                          ->where('end_date', '>=', $startDate->format('Y-m-d'));
+                        ->where('end_date', '>=', $startDate->format('Y-m-d'));
                 })
                 ->exists();
 
@@ -214,16 +245,33 @@ class ReservationController extends Controller
                     ->with('error', 'Il veicolo è in manutenzione nel periodo selezionato. Scegliere un altro veicolo o periodo.');
             }
 
-            // Verifica conflitti con prenotazioni esistenti giorno per giorno
+            // Verifica conflitti con prenotazioni esistenti giorno per giorno (confirmed o pending)
             for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
                 $existingReservation = Reservation::where('vehicle_id', $vehicleId)
                     ->whereDate('date', $date)
+                    ->whereIn('status', ['confirmed', 'pending'])
                     ->first();
 
                 if ($existingReservation) {
                     return redirect()->back()
-                        ->with('error', 'Il veicolo è già prenotato per il ' . $date->format('d/m/Y') . '. Scegliere un altro veicolo o periodo.');
+                        ->with('error', 'Il veicolo è già prenotato per il '.$date->format('d/m/Y').'. Scegliere un altro veicolo o periodo.');
                 }
+            }
+        }
+
+        // Determina lo status iniziale in base alla configurazione e al ruolo
+        $initialStatus = $request->status; // Mantieni status per manutenzione
+
+        if ($request->status !== 'maintenance') {
+            // Per prenotazioni normali, verifica AUTO_APPROVE_RESERVATIONS
+            $autoApprove = config('app.auto_approve_reservations', false);
+
+            if ($autoApprove || auth()->user()->isAdmin()) {
+                // Auto-approvazione attiva O utente è admin
+                $initialStatus = 'confirmed';
+            } else {
+                // Richiede approvazione manuale
+                $initialStatus = 'pending';
             }
         }
 
@@ -234,7 +282,8 @@ class ReservationController extends Controller
                 'driver_id' => $request->driver_id,
                 'date' => $date,
                 'note' => $request->note,
-                'status' => $request->status,
+                'status' => $initialStatus,
+                'user_id' => auth()->id(),
             ]);
         }
 
@@ -246,16 +295,22 @@ class ReservationController extends Controller
         $request = Request();
         $date = Carbon::parse($request->input('date'));
 
-        // Ottieni le prenotazioni per la data specificata
-        $reservations = Reservation::whereDate('date', $date)
-            ->where('status', '!=', 'maintenance')
-            ->with('driver', 'vehicle')
-            ->get();
+        // Ottieni le prenotazioni per la data specificata (escludi maintenance e rejected)
+        $query = Reservation::whereDate('date', $date)
+            ->whereIn('status', ['confirmed', 'pending'])
+            ->with('driver', 'vehicle');
+
+        // Filtro per user
+        if (! auth()->user()->isAdmin()) {
+            $query->where('user_id', auth()->id());
+        }
+
+        $reservations = $query->get();
 
         $data = $reservations->map(function ($reservation) {
             return [
-                'driver' => $reservation->driver ?? "???",
-                'vehicle' => $reservation->vehicle ?? "???",
+                'driver' => $reservation->driver ?? '???',
+                'vehicle' => $reservation->vehicle ?? '???',
             ];
         });
 
@@ -281,11 +336,18 @@ class ReservationController extends Controller
 
         // Per ogni veicolo, ottieni TUTTE le prenotazioni per trovare date effettive
         $vehiclesData = $vehicles->map(function ($vehicle) use ($startDate, $endDate) {
-            // Recupera tutte le prenotazioni per il veicolo
-            $allReservations = Reservation::where('vehicle_id', $vehicle->id)
+            // Recupera tutte le prenotazioni per il veicolo (escludi rejected)
+            $reservationsQuery = Reservation::where('vehicle_id', $vehicle->id)
+                ->whereIn('status', ['confirmed', 'pending'])
                 ->with('driver')
-                ->orderBy('date')
-                ->get();
+                ->orderBy('date');
+
+            // FILTRO PER USER: mostra solo le proprie prenotazioni
+            if (! auth()->user()->isAdmin()) {
+                $reservationsQuery->where('user_id', auth()->id());
+            }
+
+            $allReservations = $reservationsQuery->get();
 
             // Raggruppa TUTTE le prenotazioni in booking consecutivi
             $allBookings = [];
@@ -293,7 +355,7 @@ class ReservationController extends Controller
 
             foreach ($allReservations as $reservation) {
                 $reservationDate = Carbon::parse($reservation->date);
-                $driverName = $reservation->driver ? $reservation->driver->first_name . ' ' . $reservation->driver->last_name : 'Manutenzione';
+                $driverName = $reservation->driver ? $reservation->driver->first_name.' '.$reservation->driver->last_name : 'Manutenzione';
 
                 if ($currentBooking === null) {
                     $currentBooking = [
@@ -373,21 +435,21 @@ class ReservationController extends Controller
         // Recupera le manutenzioni per il periodo
         $maintenances = \App\Models\Maintenance::whereIn('vehicle_id', $vehicles->pluck('id'))
             ->active()
-            ->where(function($query) use ($startDate, $endDate) {
+            ->where(function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('start_date', [$startDate, $endDate])
                     ->orWhereBetween('end_date', [$startDate, $endDate])
-                    ->orWhere(function($q) use ($startDate, $endDate) {
+                    ->orWhere(function ($q) use ($startDate, $endDate) {
                         $q->where('start_date', '<=', $startDate)
-                          ->where('end_date', '>=', $endDate);
+                            ->where('end_date', '>=', $endDate);
                     });
             })
             ->get();
 
         // Aggiungi manutenzioni ai dati dei veicoli
-        $vehiclesData = $vehiclesData->map(function($vehicleData) use ($maintenances, $startDate, $endDate) {
+        $vehiclesData = $vehiclesData->map(function ($vehicleData) use ($maintenances, $startDate, $endDate) {
             $vehicleMaintenances = $maintenances->where('vehicle_id', $vehicleData['id']);
 
-            $maintenanceBookings = $vehicleMaintenances->map(function($maintenance) use ($startDate, $endDate) {
+            $maintenanceBookings = $vehicleMaintenances->map(function ($maintenance) use ($startDate, $endDate) {
                 $actualStart = $maintenance->start_date->format('Y-m-d');
                 $actualEnd = $maintenance->end_date->format('Y-m-d');
 
@@ -423,6 +485,10 @@ class ReservationController extends Controller
 
     public function updateBookingDates()
     {
+        if (! auth()->user()->isAdmin()) {
+            return response()->json(['error' => 'Accesso negato.'], 403);
+        }
+
         $request = Request();
 
         $request->validate([
@@ -439,11 +505,11 @@ class ReservationController extends Controller
 
         $firstReservation = Reservation::whereIn('id', $reservationIds)->first();
 
-        if (!$firstReservation) {
+        if (! $firstReservation) {
             // La prenotazione potrebbe essere già stata modificata/eliminata
             return response()->json([
                 'success' => true,
-                'message' => 'Prenotazione già aggiornata'
+                'message' => 'Prenotazione già aggiornata',
             ]);
         }
 
@@ -464,9 +530,9 @@ class ReservationController extends Controller
         // Verifica conflitti con manutenzioni
         $conflictingMaintenance = \App\Models\Maintenance::where('vehicle_id', $vehicleId)
             ->active()
-            ->where(function($query) use ($newStartDate, $newEndDate) {
+            ->where(function ($query) use ($newStartDate, $newEndDate) {
                 $query->where('start_date', '<=', $newEndDate)
-                      ->where('end_date', '>=', $newStartDate);
+                    ->where('end_date', '>=', $newStartDate);
             })
             ->exists();
 
@@ -490,12 +556,16 @@ class ReservationController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Prenotazione aggiornata con successo'
+            'message' => 'Prenotazione aggiornata con successo',
         ]);
     }
 
     public function deleteBooking()
     {
+        if (! auth()->user()->isAdmin()) {
+            return response()->json(['error' => 'Accesso negato.'], 403);
+        }
+
         $request = Request();
 
         $request->validate([
@@ -508,11 +578,11 @@ class ReservationController extends Controller
 
         $firstReservation = Reservation::whereIn('id', $reservationIds)->first();
 
-        if (!$firstReservation) {
+        if (! $firstReservation) {
             // La prenotazione potrebbe essere già stata modificata/eliminata
             return response()->json([
                 'success' => true,
-                'message' => 'Prenotazione già aggiornata'
+                'message' => 'Prenotazione già aggiornata',
             ]);
         }
 
@@ -525,7 +595,7 @@ class ReservationController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Prenotazione eliminata con successo'
+            'message' => 'Prenotazione eliminata con successo',
         ]);
     }
 
@@ -545,7 +615,7 @@ class ReservationController extends Controller
             ->map(function ($driver) {
                 return [
                     'id' => $driver->id,
-                    'text' => $driver->name
+                    'text' => $driver->name,
                 ];
             });
 
@@ -566,7 +636,7 @@ class ReservationController extends Controller
         // Trova le date delle prenotazioni note
         $knownDates = Reservation::whereIn('id', $knownReservationIds)
             ->pluck('date')
-            ->map(function($date) {
+            ->map(function ($date) {
                 return Carbon::parse($date);
             })
             ->sort()

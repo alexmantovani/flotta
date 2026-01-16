@@ -17,17 +17,19 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
 
-                    <x-nav-link href="{{ route('vehicle.index') }}" :active="request()->routeIs('vehicle*')">
-                        {{ __('Veicoli') }}
-                    </x-nav-link>
+                    @if(auth()->user()->isAdmin())
+                        <x-nav-link href="{{ route('vehicle.index') }}" :active="request()->routeIs('vehicle*')">
+                            {{ __('Veicoli') }}
+                        </x-nav-link>
 
-                    <x-nav-link href="{{ route('driver.index') }}" :active="request()->routeIs('driver*')">
-                        {{ __('Conducenti') }}
-                    </x-nav-link>
+                        <x-nav-link href="{{ route('driver.index') }}" :active="request()->routeIs('driver*')">
+                            {{ __('Conducenti') }}
+                        </x-nav-link>
 
-                    <x-nav-link href="{{ route('reservation.validate') }}" :active="request()->routeIs('reservation*')">
-                        {{ __('Autorizza') }}
-                    </x-nav-link>
+                        <x-nav-link href="{{ route('reservation.validate') }}" :active="request()->routeIs('reservation*')">
+                            {{ __('Autorizza') }}
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -177,15 +179,18 @@
             <x-responsive-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link href="{{ route('vehicle.index') }}" :active="request()->routeIs('vehicle*')">
-                {{ __('Veicoli') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link href="{{ route('driver.index') }}" :active="request()->routeIs('driver*')">
-                {{ __('Conducenti') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link href="{{ route('reservation.validate') }}" :active="request()->routeIs('reservation*')">
-                {{ __('Autorizza') }}
-            </x-responsive-nav-link>
+
+            @if(auth()->user()->isAdmin())
+                <x-responsive-nav-link href="{{ route('vehicle.index') }}" :active="request()->routeIs('vehicle*')">
+                    {{ __('Veicoli') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link href="{{ route('driver.index') }}" :active="request()->routeIs('driver*')">
+                    {{ __('Conducenti') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link href="{{ route('reservation.validate') }}" :active="request()->routeIs('reservation*')">
+                    {{ __('Autorizza') }}
+                </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->

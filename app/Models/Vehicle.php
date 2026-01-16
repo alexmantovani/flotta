@@ -119,12 +119,17 @@ class Vehicle extends Model
             return Carbon::parse($date);
         });
 
-        // Ottieni tutti i veicoli con stato 'available'
-        $vehicles = self::where('status', 'available')->orderBy('plate')->get();
+        // Ottieni tutti i veicoli con stato 'available', caricando solo le prenotazioni confirmed e pending
+        $vehicles = self::where('status', 'available')
+            ->with(['reservations' => function ($query) {
+                $query->whereIn('status', ['confirmed', 'pending']);
+            }])
+            ->orderBy('plate')
+            ->get();
 
         // Filtra i veicoli disponibili per il periodo specificato
         $availableVehicles = $vehicles->filter(function ($vehicle) use ($dates) {
-            // Verifica se il veicolo ha prenotazioni che si sovrappongono
+            // Verifica se il veicolo ha prenotazioni che si sovrappongono (solo confirmed e pending)
             $hasOverlappingReservations = $vehicle->reservations->contains(function ($reservation) use ($dates) {
                 return $dates->contains(function ($date) use ($reservation) {
                     return $reservation->date->isSameDay($date);
@@ -200,10 +205,10 @@ class Vehicle extends Model
         return "maintenance";
     }
 
-    // Verifica le prenotazioni (escludendo quelle con status maintenance)
+    // Verifica le prenotazioni (solo confirmed e pending)
     $reservations = $this->reservations()
         ->whereDate('date', $date)
-        ->where('status', '!=', 'maintenance')
+        ->whereIn('status', ['confirmed', 'pending'])
         ->get(['status']);
 
     if ($reservations->isNotEmpty()) {

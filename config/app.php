@@ -123,4 +123,17 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Auto Approve Reservations
+    |--------------------------------------------------------------------------
+    |
+    | Questa opzione determina se le prenotazioni create dagli utenti devono
+    | essere automaticamente approvate (status='confirmed') oppure rimanere
+    | in attesa di approvazione da parte di un admin (status='pending').
+    |
+    */
+
+    'auto_approve_reservations' => env('AUTO_APPROVE_RESERVATIONS', false),
+
 ];

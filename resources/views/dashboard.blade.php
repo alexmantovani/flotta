@@ -16,6 +16,144 @@
             {{ session('error') }}
         </div>
     @endif
+
+    @if(!auth()->user()->isAdmin())
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 mb-4 mt-4">
+        <div class="bg-blue-100 dark:bg-blue-900 border border-blue-400 dark:border-blue-700 text-blue-700 dark:text-blue-200 px-4 py-3 rounded relative" role="alert">
+            <strong class="font-bold">Modalità Utente:</strong>
+            <span class="block sm:inline">Stai visualizzando solo le tue prenotazioni. Non puoi modificare o eliminare prenotazioni.</span>
+        </div>
+    </div>
+    @endif
+
+    <!-- Card Statistiche -->
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 pt-8 pb-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <!-- Veicoli Totali -->
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
+                <div class="p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <svg class="h-12 w-12 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4 flex-1">
+                            <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Veicoli Totali</div>
+                            <div class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ $totalVehicles }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Veicoli Liberi -->
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
+                <div class="p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <svg class="h-12 w-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4 flex-1">
+                            <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Veicoli Liberi</div>
+                            <div class="text-3xl font-bold text-green-600 dark:text-green-400">{{ $vehiclesAvailableToday }}</div>
+                            <div class="text-xs text-gray-400 dark:text-gray-500 mt-1">disponibili oggi</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Veicoli Prenotati -->
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
+                <div class="p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <svg class="h-12 w-12 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4 flex-1">
+                            <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Veicoli Prenotati</div>
+                            <div class="text-3xl font-bold text-yellow-600 dark:text-yellow-400">{{ $vehiclesReservedToday }}</div>
+                            <div class="text-xs text-gray-400 dark:text-gray-500 mt-1">in uso oggi</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Veicoli in Manutenzione -->
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
+                <div class="p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <svg class="h-12 w-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4 flex-1">
+                            <div class="text-sm font-medium text-gray-500 dark:text-gray-400">In Manutenzione</div>
+                            <div class="text-3xl font-bold text-red-600 dark:text-red-400">{{ $vehiclesInMaintenanceToday }}</div>
+                            <div class="text-xs text-gray-400 dark:text-gray-500 mt-1">oggi</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Riga aggiuntiva per Prenotazioni -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Prenotazioni Oggi -->
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
+                <div class="p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <svg class="h-12 w-12 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4 flex-1">
+                            <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Prenotazioni Oggi</div>
+                            <div class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{{ $reservationsToday }}</div>
+                            <div class="text-xs text-gray-400 dark:text-gray-500 mt-1">attive</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Prenotazioni in Attesa -->
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
+                <div class="p-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center flex-1">
+                            <div class="flex-shrink-0">
+                                <svg class="h-12 w-12 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-4 flex-1">
+                                <div class="text-sm font-medium text-gray-500 dark:text-gray-400">In Attesa</div>
+                                <div class="text-3xl font-bold text-purple-600 dark:text-purple-400">{{ $reservationsPending }}</div>
+                                <div class="text-xs text-gray-400 dark:text-gray-500 mt-1">da approvare</div>
+                            </div>
+                        </div>
+                        @if(auth()->user()->isAdmin() && $reservationsPending > 0)
+                        <div class="ml-4">
+                            <a href="{{ route('reservation.validate') }}"
+                               class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition duration-150 ease-in-out">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                                Vai
+                            </a>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="py-12 ">
         <div id="dashboard-container" class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
@@ -153,6 +291,9 @@
             $.ajax({
                 url: '{{ url('/api/get-timeline-data') }}',
                 method: 'GET',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
                 data: {
                     start_date: startDateStr,
                     end_date: endDateStr
@@ -650,4 +791,16 @@
             return `${year}-${month}-${day}`;
         }
     </script>
+
+    @if(!auth()->user()->isAdmin())
+    <style>
+        .delete-booking-btn,
+        .resize-handle {
+            display: none !important;
+        }
+        .booking-bar {
+            cursor: default !important;
+        }
+    </style>
+    @endif
 </x-app-layout>

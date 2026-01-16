@@ -95,10 +95,10 @@ class MaintenanceController extends Controller
                 ->withErrors(['dates' => 'Esiste già una manutenzione programmata per questo veicolo nel periodo selezionato.']);
         }
 
-        // Verifica sovrapposizioni con prenotazioni
+        // Verifica sovrapposizioni con prenotazioni (solo confirmed e pending)
         $hasReservations = Reservation::where('vehicle_id', $validated['vehicle_id'])
             ->whereBetween('date', [$validated['start_date'], $validated['end_date']])
-            ->where('status', '!=', 'maintenance')
+            ->whereIn('status', ['confirmed', 'pending'])
             ->exists();
 
         if ($hasReservations) {

@@ -94,10 +94,10 @@ class VehicleController extends Controller
      */
     public function show(Vehicle $vehicle)
     {
-        // Prenotazioni future (escluse manutenzioni)
+        // Prenotazioni future (solo confirmed e pending)
         $groupedReservations = $vehicle->reservations()
             ->where('date', '>=', Carbon::today())
-            ->where('status', '!=', 'maintenance')
+            ->whereIn('status', ['confirmed', 'pending'])
             ->orderBy('date')
             ->get()
             ->groupBy(function ($reservation) {

@@ -26,10 +26,15 @@ class CreateNewUser implements CreatesNewUsers
             'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
         ])->validate();
 
+        // Determina il ruolo: se è il primo utente, sarà admin
+        $isFirstUser = User::count() === 0;
+        $role = $isFirstUser ? 'admin' : 'user';
+
         return User::create([
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => Hash::make($input['password']),
+            'role' => $role,
         ]);
     }
 }

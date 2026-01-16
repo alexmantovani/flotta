@@ -13,7 +13,16 @@ class Reservation extends Model
         'date' => 'date',
     ];
 
-    protected $guarded = [];
+    protected $fillable = [
+        'vehicle_id',
+        'driver_id',
+        'user_id',
+        'date',
+        'note',
+        'destination',
+        'chilometers',
+        'status',
+    ];
 
     public function vehicle()
     {
@@ -23,5 +32,10 @@ class Reservation extends Model
     public function driver()
     {
         return $this->belongsTo(Driver::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

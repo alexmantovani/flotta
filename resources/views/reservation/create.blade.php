@@ -130,25 +130,43 @@
                             </div>
                             <div class="col-span-1 flex flex-col p-5">
                                 @csrf
-                                <div class="mb-4">
-                                    <label for="vehicle_id"
-                                        class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Veicolo') }}</label>
-                                    <select name="vehicle_id" id="vehicle_id" class="form-select mt-1 block w-full">
-                                        @if ($vehicles->count() > 1)
-                                            <option value="0">
-                                                {{ __('La prima macchina disponibile per il periodo selezionato') }}
-                                            </option>
-                                            @foreach ($vehicles as $vehicle)
-                                                <option value="{{ $vehicle->id }}">{{ $vehicle->plate }} -
-                                                    {{ $vehicle->model }} -
-                                                    {{ $vehicle->brand }}</option>
-                                            @endforeach
-                                        @else
-                                            <option value="{{ $vehicles[0]->id }}">{{ $vehicles[0]->model }} -
-                                                {{ $vehicles[0]->brand }}</option>
-                                        @endif
-                                    </select>
-                                </div>
+
+                                @if(!auth()->user()->isAdmin())
+                                    <!-- User normale: info sul comportamento automatico -->
+                                    <div class="mb-4 p-4 bg-blue-50 dark:bg-blue-900 border border-blue-300 dark:border-blue-700 rounded-lg">
+                                        <h4 class="text-sm font-semibold text-blue-800 dark:text-blue-200 mb-2">
+                                            Prenotazione automatica
+                                        </h4>
+                                        <p class="text-xs text-blue-600 dark:text-blue-300">
+                                            Il sistema assegnerà automaticamente:<br>
+                                            • <strong>Conducente:</strong> Tu stesso<br>
+                                            • <strong>Veicolo:</strong> Primo veicolo disponibile per il periodo selezionato
+                                        </p>
+                                    </div>
+                                    <input type="hidden" name="vehicle_id" value="0">
+                                @else
+                                    <!-- Admin: selezione completa -->
+                                    <div class="mb-4">
+                                        <label for="vehicle_id"
+                                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Veicolo') }}</label>
+                                        <select name="vehicle_id" id="vehicle_id" class="form-select mt-1 block w-full">
+                                            @if ($vehicles->count() > 1)
+                                                <option value="0">
+                                                    {{ __('La prima macchina disponibile per il periodo selezionato') }}
+                                                </option>
+                                                @foreach ($vehicles as $vehicle)
+                                                    <option value="{{ $vehicle->id }}">{{ $vehicle->plate }} -
+                                                        {{ $vehicle->model }} -
+                                                        {{ $vehicle->brand }}</option>
+                                                @endforeach
+                                            @else
+                                                <option value="{{ $vehicles[0]->id }}">{{ $vehicles[0]->model }} -
+                                                    {{ $vehicles[0]->brand }}</option>
+                                            @endif
+                                        </select>
+                                    </div>
+                                @endif
+
                                 @if ($showDriverSelect)
                                     <div class="mb-4">
                                         <label for="driver_id"

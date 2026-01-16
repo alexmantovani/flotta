@@ -61,7 +61,7 @@
     }
 
     .booking-bar {
-        @apply absolute top-1/2 -translate-y-1/2 h-[26px] bg-green-300 rounded-full px-2.5 text-green-900 text-[11px] font-semibold flex items-center justify-start shadow cursor-move transition-shadow whitespace-nowrap overflow-hidden text-ellipsis z-[2] select-none;
+        @apply absolute top-1/2 -translate-y-1/2 h-[26px] bg-sky-300 rounded-full px-2.5 text-sky-900 text-[11px] font-semibold flex items-center justify-start shadow cursor-move transition-shadow whitespace-nowrap overflow-hidden text-ellipsis z-[2] select-none;
     }
 
     .booking-bar:hover {
@@ -77,7 +77,7 @@
     }
 
     .booking-bar.pending {
-        @apply bg-blue-300 text-blue-900;
+        @apply bg-yellow-300 text-yellow-900;
     }
 
     .resize-handle {
